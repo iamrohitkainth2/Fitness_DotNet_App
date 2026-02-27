@@ -1,0 +1,49 @@
+@model HealthManagement.Models.FoodLog
+
+@{
+    ViewData["Title"] = "Edit Food Entry";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="UserId" />
+
+    <div class="form-group">
+        <label asp-for="FoodName"></label>
+        <input asp-for="FoodName" class="form-control" />
+        <span asp-validation-for="FoodName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Calories"></label>
+        <input asp-for="Calories" class="form-control" />
+        <span asp-validation-for="Calories" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Carbs"></label>
+        <input asp-for="Carbs" class="form-control" />
+        <span asp-validation-for="Carbs" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Protein"></label>
+        <input asp-for="Protein" class="form-control" />
+        <span asp-validation-for="Protein" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Fat"></label>
+        <input asp-for="Fat" class="form-control" />
+        <span asp-validation-for="Fat" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Micronutrients"></label>
+        <input asp-for="Micronutrients" class="form-control" />
+        <span asp-validation-for="Micronutrients" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

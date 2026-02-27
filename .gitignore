@@ -1,0 +1,50 @@
+# ------------------------------
+# .NET / ASP.NET Core
+# ------------------------------
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+TestResults/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio / Rider
+.vs/
+_ReSharper*/
+*.DotSettings.user
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# NuGet
+*.nupkg
+*.snupkg
+
+# ------------------------------
+# SQLite / local data files
+# ------------------------------
+*.db
+*.db-shm
+*.db-wal
+
+# ------------------------------
+# App configuration / secrets
+# ------------------------------
+appsettings.Local.json
+appsettings.*.local.json
+.env
+.env.*
+
+# ------------------------------
+# OS files
+# ------------------------------
+.DS_Store
+Thumbs.db

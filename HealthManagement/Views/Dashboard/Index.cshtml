@@ -1,0 +1,110 @@
+@model HealthManagement.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-auto">
+        <label for="date" class="col-form-label">Date</label>
+    </div>
+    <div class="col-auto">
+        <input id="date" name="date" type="date" class="form-control" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Refresh</button>
+    </div>
+    <div class="col-auto">
+        <button type="submit" name="generateInsight" value="true" class="btn btn-outline-primary">AI Insight</button>
+    </div>
+</form>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Calories Intake</h5>
+                <p class="card-text fs-4">@Model.DailyCaloriesIntake</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Calories Burned</h5>
+                <p class="card-text fs-4">@Model.DailyCaloriesBurned</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Calorie Balance</h5>
+                <p class="card-text fs-4">@Model.DailyCalorieBalance</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Weekly Trend</h5>
+        <div style="position: relative; height: 320px;">
+            <canvas id="weeklyTrendChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title">AI Insight</h5>
+        @if (Model.IsInsightGenerated)
+        {
+            <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">@Model.PersonalizedInsight</pre>
+        }
+        else
+        {
+            <p class="mb-0 text-muted">Click the <strong>AI Insight</strong> button to generate personalized guidance.</p>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyLabels));
+        const intake = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyIntake));
+        const burned = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyBurned));
+
+        const ctx = document.getElementById('weeklyTrendChart');
+        const existingChart = Chart.getChart(ctx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Intake',
+                        data: intake,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Burned',
+                        data: burned,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
+}

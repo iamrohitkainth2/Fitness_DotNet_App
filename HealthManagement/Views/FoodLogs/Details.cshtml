@@ -1,0 +1,39 @@
+@model HealthManagement.Models.FoodLog
+
+@{
+    ViewData["Title"] = "Food Entry Details";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div>
+    <h4>FoodLog</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Food</dt>
+        <dd class="col-sm-10">@Model.FoodName</dd>
+
+        <dt class="col-sm-2">Calories</dt>
+        <dd class="col-sm-10">@Model.Calories</dd>
+
+        <dt class="col-sm-2">Carbs</dt>
+        <dd class="col-sm-10">@Model.Carbs</dd>
+
+        <dt class="col-sm-2">Protein</dt>
+        <dd class="col-sm-10">@Model.Protein</dd>
+
+        <dt class="col-sm-2">Fat</dt>
+        <dd class="col-sm-10">@Model.Fat</dd>
+
+        <dt class="col-sm-2">Micronutrients</dt>
+        <dd class="col-sm-10">@Model.Micronutrients</dd>
+
+        <dt class="col-sm-2">Logged</dt>
+        <dd class="col-sm-10">@Model.DateLogged.ToLocalTime().ToString("g")</dd>
+    </dl>
+</div>
+
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to list</a>
+</p>

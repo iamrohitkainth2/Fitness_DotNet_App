@@ -1,0 +1,54 @@
+@model IEnumerable<HealthManagement.Models.ExerciseLog>
+
+@{
+    ViewData["Title"] = "My Exercise Logs";
+}
+
+<h2>@ViewData["Title"]</h2>
+<p><a asp-action="Create" class="btn btn-primary">Add Exercise</a></p>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Start Date</label>
+        <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">End Date</label>
+        <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Exercise Type</label>
+        <input type="text" name="exerciseType" class="form-control" value="@ViewBag.ExerciseType" placeholder="e.g. run, walk, yoga" />
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Exercise</th>
+            <th>Duration (min)</th>
+            <th>Calories Burned</th>
+            <th>Date</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach(var log in Model)
+{
+    <tr>
+        <td>@log.ExerciseName</td>
+        <td>@log.DurationMinutes</td>
+        <td>@log.CaloriesBurned</td>
+        <td>@log.DateLogged.ToLocalTime().ToString("g")</td>
+        <td>
+            <a asp-action="Details" asp-route-id="@log.Id">Details</a> |
+            <a asp-action="Edit" asp-route-id="@log.Id">Edit</a> |
+            <a asp-action="Delete" asp-route-id="@log.Id">Delete</a>
+        </td>
+    </tr>
+}
+    </tbody>
+</table>

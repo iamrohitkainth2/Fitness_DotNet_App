@@ -1,0 +1,136 @@
+@model HealthManagement.Models.FoodLog
+
+@{
+    ViewData["Title"] = "Add Food Entry";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">AI Nutrient Extraction</h5>
+        <div class="mb-3">
+            <label for="foodDescription" class="form-label">Food Description</label>
+            <textarea id="foodDescription" class="form-control" rows="3" placeholder="e.g. grilled chicken breast with rice and broccoli"></textarea>
+            <button type="button" id="analyzeTextBtn" class="btn btn-outline-primary mt-2">Analyze Text</button>
+        </div>
+        <div class="mb-3">
+            <label for="mealImage" class="form-label">Meal Image</label>
+            <input id="mealImage" type="file" class="form-control" accept="image/*" />
+            <button type="button" id="analyzeImageBtn" class="btn btn-outline-primary mt-2">Analyze Image</button>
+        </div>
+        <div id="aiStatus" class="text-muted small"></div>
+    </div>
+</div>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="FoodName"></label>
+        <input asp-for="FoodName" class="form-control" />
+        <span asp-validation-for="FoodName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Calories"></label>
+        <input asp-for="Calories" class="form-control" />
+        <span asp-validation-for="Calories" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Carbs"></label>
+        <input asp-for="Carbs" class="form-control" />
+        <span asp-validation-for="Carbs" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Protein"></label>
+        <input asp-for="Protein" class="form-control" />
+        <span asp-validation-for="Protein" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Fat"></label>
+        <input asp-for="Fat" class="form-control" />
+        <span asp-validation-for="Fat" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Micronutrients"></label>
+        <input asp-for="Micronutrients" class="form-control" />
+        <span asp-validation-for="Micronutrients" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const antiForgeryToken = tokenInput ? tokenInput.value : '';
+        const statusEl = document.getElementById('aiStatus');
+
+        function updateFormFields(data) {
+            const set = (name, value) => {
+                const el = document.querySelector(`[name="${name}"]`);
+                if (el && value !== undefined && value !== null) {
+                    el.value = value;
+                }
+            };
+
+            set('FoodName', data.foodName);
+            set('Calories', data.calories);
+            set('Carbs', data.carbs);
+            set('Protein', data.protein);
+            set('Fat', data.fat);
+            if (data.micronutrients) {
+                set('Micronutrients', JSON.stringify(data.micronutrients));
+            }
+        }
+
+        async function postForm(url, formData) {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': antiForgeryToken
+                }
+            });
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({ message: 'AI analysis failed.' }));
+                throw new Error(err.message || 'AI analysis failed.');
+            }
+
+            return response.json();
+        }
+
+        document.getElementById('analyzeTextBtn').addEventListener('click', async () => {
+            try {
+                const description = document.getElementById('foodDescription').value;
+                statusEl.textContent = 'Analyzing text...';
+                const formData = new FormData();
+                formData.append('description', description);
+                const data = await postForm('@Url.Action("AnalyzeText", "FoodLogs")', formData);
+                updateFormFields(data);
+                statusEl.textContent = 'Text analysis complete. Fields auto-filled.';
+            } catch (error) {
+                statusEl.textContent = error.message;
+            }
+        });
+
+        document.getElementById('analyzeImageBtn').addEventListener('click', async () => {
+            try {
+                const imageInput = document.getElementById('mealImage');
+                if (!imageInput.files || imageInput.files.length === 0) {
+                    statusEl.textContent = 'Please choose an image first.';
+                    return;
+                }
+
+                statusEl.textContent = 'Analyzing image...';
+                const formData = new FormData();
+                formData.append('mealImage', imageInput.files[0]);
+                const data = await postForm('@Url.Action("AnalyzeImage", "FoodLogs")', formData);
+                updateFormFields(data);
+                statusEl.textContent = 'Image analysis complete. Fields auto-filled.';
+            } catch (error) {
+                statusEl.textContent = error.message;
+            }
+        });
+    </script>
+}
