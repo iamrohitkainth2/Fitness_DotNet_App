@@ -7,6 +7,8 @@ using HealthManagement.Repositories;
 using HealthManagement.Services;
 using HealthManagement.Settings;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,18 +56,59 @@ builder.Services.AddScoped<IExerciseLogService, ExerciseLogService>();
 builder.Services.AddHttpClient<INutrientExtractionService, NutrientExtractionService>();
 builder.Services.AddHttpClient<IHealthInsightsService, HealthInsightsService>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
+});
+
+builder.Services.AddHsts(options =>
+{
+    options.Preload = true;
+    options.IncludeSubDomains = true;
+    options.MaxAge = TimeSpan.FromDays(365);
+});
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
+
+builder.Services.AddHttpLogging(options =>
+{
+    options.LoggingFields = HttpLoggingFields.RequestMethod |
+                            HttpLoggingFields.RequestPath |
+                            HttpLoggingFields.ResponseStatusCode |
+                            HttpLoggingFields.Duration;
+});
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+
+    if (!builder.Environment.IsDevelopment())
+    {
+        options.Filters.Add(new RequireHttpsAttribute());
+    }
+});
+
 // Razor Pages required for Identity UI
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+app.UseHttpLogging();
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+else
+{
+    app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 }
 
 app.UseHttpsRedirection();

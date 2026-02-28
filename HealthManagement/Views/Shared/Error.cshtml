@@ -6,6 +6,20 @@
 <h1 class="text-danger">Error.</h1>
 <h2 class="text-danger">An error occurred while processing your request.</h2>
 
+@if (Model.StatusCode.HasValue)
+{
+    <p>
+        <strong>Status Code:</strong> <code>@Model.StatusCode</code>
+    </p>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Path))
+{
+    <p>
+        <strong>Path:</strong> <code>@Model.Path</code>
+    </p>
+}
+
 @if (Model.ShowRequestId)
 {
     <p>

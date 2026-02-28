@@ -24,8 +24,25 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    public IActionResult Error(int? statusCode = null)
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        var requestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+        var path = HttpContext.Request.Path.Value;
+
+        if (statusCode.HasValue)
+        {
+            _logger.LogWarning("HTTP {StatusCode} for path {Path}. RequestId: {RequestId}", statusCode.Value, path, requestId);
+        }
+        else
+        {
+            _logger.LogError("Unhandled exception for path {Path}. RequestId: {RequestId}", path, requestId);
+        }
+
+        return View(new ErrorViewModel
+        {
+            RequestId = requestId,
+            StatusCode = statusCode,
+            Path = path
+        });
     }
 }
