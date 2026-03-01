@@ -115,3 +115,24 @@ a:hover {
 .navbar-light .navbar-nav .show > .nav-link {
   color: #f6f3ff !important;
 }
+
+.ai-insight-card {
+  position: relative;
+}
+
+.ai-insight-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 8, 15, 0.78);
+  color: #f6f3ff;
+  font-weight: 600;
+  z-index: 5;
+  border-radius: inherit;
+}
+
+.ai-insight-loading #aiInsightContent {
+  opacity: 0.35;
+}

@@ -6,7 +6,7 @@
 
 <h2>@ViewData["Title"]</h2>
 
-<form method="get" class="row g-3 mb-4">
+<form id="dashboardFilterForm" method="get" class="row g-3 mb-4">
     <div class="col-auto">
         <label for="date" class="col-form-label">Date</label>
     </div>
@@ -17,21 +17,26 @@
         <button type="submit" class="btn btn-primary">Refresh</button>
     </div>
     <div class="col-auto">
-        <button type="submit" name="generateInsight" value="true" class="btn btn-outline-primary">AI Insight</button>
+        <button id="generateInsightButton" type="submit" name="generateInsight" value="true" class="btn btn-outline-primary">AI Insight</button>
     </div>
 </form>
 
-<div class="card mb-4">
+<div id="aiInsightCard" class="card mb-4 ai-insight-card">
+    <div id="aiInsightLoading" class="ai-insight-loading-overlay" hidden>
+        <span>Generating AI insight...</span>
+    </div>
     <div class="card-body">
         <h5 class="card-title">AI Insight</h5>
-        @if (Model.IsInsightGenerated)
-        {
-            <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">@Model.PersonalizedInsight</pre>
-        }
-        else
-        {
-            <p class="mb-0 text-muted">Click the <strong>AI Insight</strong> button to generate personalized guidance.</p>
-        }
+        <div id="aiInsightContent">
+            @if (Model.IsInsightGenerated)
+            {
+                <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">@Model.PersonalizedInsight</pre>
+            }
+            else
+            {
+                <p class="mb-0 text-muted">Click the <strong>AI Insight</strong> button to generate personalized guidance.</p>
+            }
+        </div>
     </div>
 </div>
 
@@ -82,6 +87,24 @@
         const existingChart = Chart.getChart(ctx);
         if (existingChart) {
             existingChart.destroy();
+        }
+
+        const dashboardFilterForm = document.getElementById('dashboardFilterForm');
+        const aiInsightButton = document.getElementById('generateInsightButton');
+        const aiInsightLoading = document.getElementById('aiInsightLoading');
+        const aiInsightCard = document.getElementById('aiInsightCard');
+        const aiInsightContent = document.getElementById('aiInsightContent');
+
+        if (dashboardFilterForm && aiInsightButton && aiInsightLoading && aiInsightCard && aiInsightContent) {
+            dashboardFilterForm.addEventListener('submit', function (event) {
+                const submitter = event.submitter;
+                if (submitter && submitter.id === 'generateInsightButton') {
+                    aiInsightLoading.hidden = false;
+                    aiInsightCard.classList.add('ai-insight-loading');
+                    aiInsightContent.setAttribute('aria-hidden', 'true');
+                    aiInsightButton.textContent = 'Processing...';
+                }
+            });
         }
 
         new Chart(ctx, {
