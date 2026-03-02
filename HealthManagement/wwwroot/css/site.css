@@ -136,3 +136,99 @@ a:hover {
 .ai-insight-loading #aiInsightContent {
   opacity: 0.35;
 }
+
+#account,
+#external-account {
+  background-color: var(--cf-surface);
+  border: 1px solid var(--cf-surface-border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+main form#account {
+  background-color: transparent;
+}
+
+#account a,
+#external-account a {
+  color: #9fc5ff;
+}
+
+#account a:hover,
+#external-account a:hover {
+  color: #c5daff;
+}
+
+#account h2,
+#external-account h2,
+.login-container h1,
+.login-container h2,
+.login-container h3 {
+  color: var(--cf-text);
+}
+
+#account .form-control,
+#external-account .form-control,
+#account .form-check-label,
+#external-account .form-check-label,
+#account label,
+#external-account label {
+  color: var(--cf-text);
+}
+
+#account .form-control,
+#external-account .form-control,
+#account .form-select,
+#external-account .form-select {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(179, 191, 216, 0.28) !important;
+  color: var(--cf-text) !important;
+}
+
+#account .form-floating > label,
+#external-account .form-floating > label,
+#account .form-floating > .form-control ~ label,
+#external-account .form-floating > .form-control ~ label {
+  color: var(--cf-text-muted) !important;
+}
+
+#account .form-floating > .form-control:focus ~ label,
+#external-account .form-floating > .form-control:focus ~ label,
+#account .form-floating > .form-control:not(:placeholder-shown) ~ label,
+#external-account .form-floating > .form-control:not(:placeholder-shown) ~ label {
+  color: #d2d9ef !important;
+}
+
+#account .form-check-input,
+#external-account .form-check-input {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(179, 191, 216, 0.45);
+}
+
+#account .form-check-input:checked,
+#external-account .form-check-input:checked {
+  background-color: var(--cf-accent);
+  border-color: var(--cf-accent);
+}
+
+#account .text-danger,
+#external-account .text-danger,
+.validation-summary-errors,
+.validation-summary-valid {
+  color: #ffc8d3 !important;
+}
+
+#account .btn-primary,
+#external-account .btn-primary {
+  width: 100%;
+}
+
+#account .btn,
+#external-account .btn {
+  border-radius: 0.6rem;
+}
+
+hr {
+  border-color: rgba(179, 191, 216, 0.25);
+}
