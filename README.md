@@ -135,4 +135,4 @@ dotnet publish HealthManagement/HealthManagement.csproj
 
 ---
 
-If you want, I can also add badges (build status, .NET version, Azure) and a small screenshots section for better GitHub presentation.
+
