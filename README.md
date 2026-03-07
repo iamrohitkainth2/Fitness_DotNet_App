@@ -6,6 +6,8 @@ A full-stack ASP.NET Core MVC health tracking application where users can log fo
 
 - User authentication and authorization with ASP.NET Core Identity
 - Food logging (create, edit, delete, history)
+- Add Food smart suggestions while typing from your previous entries
+- Auto-populate calories/macros/micronutrients only when a suggestion is explicitly selected
 - Exercise logging (create, edit, delete, history)
 - Dashboard with calorie intake vs calories burned summary
 - Service + repository layered architecture for maintainability
@@ -124,7 +126,7 @@ dotnet publish HealthManagement/HealthManagement.csproj
 
 - Authentication UI is scaffolded through ASP.NET Core Identity.
 - AI-related features require valid Azure OpenAI configuration.
-- Recent updates include login screen UX and static asset conflict fixes.
+- Recent updates include login screen UX, static asset conflict fixes, and Add Food selection-based auto-fill.
 
 ## Contributing
 

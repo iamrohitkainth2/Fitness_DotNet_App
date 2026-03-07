@@ -26,7 +26,10 @@
 <form asp-action="Create" method="post">
     <div class="form-group">
         <label asp-for="FoodName"></label>
-        <input asp-for="FoodName" class="form-control" />
+        <div class="position-relative">
+            <input asp-for="FoodName" class="form-control" autocomplete="off" />
+            <div id="foodNameSuggestions" class="list-group position-absolute w-100 d-none" style="z-index: 1050; max-height: 220px; overflow-y: auto;"></div>
+        </div>
         <span asp-validation-for="FoodName" class="text-danger"></span>
     </div>
     <div class="form-group">
@@ -64,6 +67,15 @@
         const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
         const antiForgeryToken = tokenInput ? tokenInput.value : '';
         const statusEl = document.getElementById('aiStatus');
+        const foodNameInput = document.getElementById('FoodName');
+        const foodNameSuggestions = document.getElementById('foodNameSuggestions');
+        const suggestionsUrl = '@Url.Action("Suggestions", "FoodLogs")';
+        const foodDetailsUrl = '@Url.Action("FoodDetails", "FoodLogs")';
+        let suggestionTimer = null;
+        let activeSuggestionRequest = null;
+        let activeSuggestionItems = [];
+        let activeSuggestionIndex = -1;
+        let lastAutoFilledFoodName = '';
 
         function updateFormFields(data) {
             const set = (name, value) => {
@@ -79,7 +91,10 @@
             set('Protein', data.protein);
             set('Fat', data.fat);
             if (data.micronutrients) {
-                set('Micronutrients', JSON.stringify(data.micronutrients));
+                const micronutrientsValue = typeof data.micronutrients === 'string'
+                    ? data.micronutrients
+                    : JSON.stringify(data.micronutrients);
+                set('Micronutrients', micronutrientsValue);
             }
         }
 
@@ -98,6 +113,149 @@
             }
 
             return response.json();
+        }
+
+        function renderFoodSuggestions(items) {
+            foodNameSuggestions.innerHTML = '';
+            activeSuggestionItems = items;
+            activeSuggestionIndex = -1;
+
+            if (!items || items.length === 0) {
+                foodNameSuggestions.classList.add('d-none');
+                return;
+            }
+
+            items.forEach((item, index) => {
+                const suggestionButton = document.createElement('button');
+                suggestionButton.type = 'button';
+                suggestionButton.className = 'list-group-item list-group-item-action';
+                suggestionButton.textContent = item;
+                suggestionButton.dataset.index = index;
+                suggestionButton.addEventListener('mousedown', e => {
+                    // Prevent blur so click can complete selection.
+                    e.preventDefault();
+                });
+                suggestionButton.addEventListener('click', () => {
+                    selectSuggestion(item);
+                });
+                foodNameSuggestions.appendChild(suggestionButton);
+            });
+
+            foodNameSuggestions.classList.remove('d-none');
+        }
+
+        function hideSuggestions() {
+            foodNameSuggestions.classList.add('d-none');
+            activeSuggestionIndex = -1;
+        }
+
+        function highlightSuggestion(index) {
+            const suggestionButtons = foodNameSuggestions.querySelectorAll('button[data-index]');
+            suggestionButtons.forEach(button => button.classList.remove('active'));
+
+            if (index >= 0 && index < suggestionButtons.length) {
+                suggestionButtons[index].classList.add('active');
+                suggestionButtons[index].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        async function autoFillFoodDetailsByName(selectedFoodName) {
+            if (!selectedFoodName || selectedFoodName.length < 2) {
+                return;
+            }
+
+            if (selectedFoodName.toLowerCase() === lastAutoFilledFoodName.toLowerCase()) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${foodDetailsUrl}?foodName=${encodeURIComponent(selectedFoodName)}`);
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+                updateFormFields(data);
+                lastAutoFilledFoodName = selectedFoodName;
+                statusEl.textContent = 'Nutrition details auto-filled from previous entry.';
+            } catch {
+                // Keep the form usable even if suggestions lookup fails.
+            }
+        }
+
+        function selectSuggestion(selectedFoodName) {
+            foodNameInput.value = selectedFoodName;
+            hideSuggestions();
+            autoFillFoodDetailsByName(selectedFoodName);
+        }
+
+        if (foodNameInput && foodNameSuggestions) {
+            foodNameInput.addEventListener('input', () => {
+                const term = foodNameInput.value.trim();
+                lastAutoFilledFoodName = '';
+
+                if (suggestionTimer) {
+                    clearTimeout(suggestionTimer);
+                }
+
+                if (activeSuggestionRequest) {
+                    activeSuggestionRequest.abort();
+                    activeSuggestionRequest = null;
+                }
+
+                if (term.length < 2) {
+                    renderFoodSuggestions([]);
+                    return;
+                }
+
+                suggestionTimer = setTimeout(async () => {
+                    try {
+                        activeSuggestionRequest = new AbortController();
+                        const signal = activeSuggestionRequest.signal;
+                        const response = await fetch(`${suggestionsUrl}?term=${encodeURIComponent(term)}`, { signal });
+                        if (!response.ok) {
+                            renderFoodSuggestions([]);
+                            return;
+                        }
+
+                        const items = await response.json();
+                        renderFoodSuggestions(Array.isArray(items) ? items : []);
+                    } catch (error) {
+                        if (error && error.name !== 'AbortError') {
+                            renderFoodSuggestions([]);
+                        }
+                    } finally {
+                        activeSuggestionRequest = null;
+                    }
+                }, 220);
+            });
+
+            foodNameInput.addEventListener('keydown', e => {
+                if (foodNameSuggestions.classList.contains('d-none') || activeSuggestionItems.length === 0) {
+                    return;
+                }
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, activeSuggestionItems.length - 1);
+                    highlightSuggestion(activeSuggestionIndex);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
+                    highlightSuggestion(activeSuggestionIndex);
+                } else if (e.key === 'Enter') {
+                    if (activeSuggestionIndex >= 0 && activeSuggestionIndex < activeSuggestionItems.length) {
+                        e.preventDefault();
+                        selectSuggestion(activeSuggestionItems[activeSuggestionIndex]);
+                    }
+                } else if (e.key === 'Escape') {
+                    hideSuggestions();
+                }
+            });
+
+            foodNameInput.addEventListener('blur', () => {
+                setTimeout(() => hideSuggestions(), 120);
+            });
         }
 
         document.getElementById('analyzeTextBtn').addEventListener('click', async () => {

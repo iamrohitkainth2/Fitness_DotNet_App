@@ -81,6 +81,69 @@ namespace HealthManagement.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Suggestions(string? term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                return Json(Array.Empty<string>());
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            var normalizedTerm = term.Trim();
+            var suggestions = (await _foodLogService.GetUserFoodLogsAsync(user.Id))
+                .Select(log => log.FoodName)
+                .Where(name => !string.IsNullOrWhiteSpace(name)
+                    && name.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name)
+                .Take(8)
+                .ToList();
+
+            return Json(suggestions);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> FoodDetails(string? foodName)
+        {
+            if (string.IsNullOrWhiteSpace(foodName))
+            {
+                return BadRequest(new { message = "Food name is required." });
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            var normalizedName = foodName.Trim();
+            var matchedFood = (await _foodLogService.GetUserFoodLogsAsync(user.Id))
+                .FirstOrDefault(log =>
+                    !string.IsNullOrWhiteSpace(log.FoodName)
+                    && string.Equals(log.FoodName.Trim(), normalizedName, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedFood == null)
+            {
+                return NotFound();
+            }
+
+            return Json(new
+            {
+                foodName = matchedFood.FoodName,
+                calories = matchedFood.Calories,
+                carbs = matchedFood.Carbs,
+                protein = matchedFood.Protein,
+                fat = matchedFood.Fat,
+                micronutrients = matchedFood.Micronutrients
+            });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AnalyzeText(string description)
